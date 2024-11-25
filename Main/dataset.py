@@ -4,7 +4,7 @@
 # @Email   :
 # @File    : dataset.py
 # @Software: PyCharm
-# @Note    :
+# @Note    : 处理树结构数据集
 import os
 import json
 import torch
@@ -33,6 +33,7 @@ class TreeDataset(InMemoryDataset):
     def download(self):
         pass
 
+    # 处理树结构数据集，计算中心性指标，并生成图数据对象
     def process(self):
         data_list = []
         raw_file_names = self.raw_file_names
@@ -40,7 +41,7 @@ class TreeDataset(InMemoryDataset):
         for filename in raw_file_names:
             centrality = None
             y = []
-            row = []
+            row = [] 
             col = []
             no_root_row = []
             no_root_col = []
@@ -48,6 +49,10 @@ class TreeDataset(InMemoryDataset):
             filepath = os.path.join(self.raw_dir, filename)
             post = json.load(open(filepath, 'r', encoding='utf-8'))
             if self.word_embedding == 'word2vec':
+
+                # 输出文本内容
+                print('帖子内容:',post['source']['content'], '\n', '判断结果:','假' if post['source']['label'] == 1 else '真' ,'\n')
+
                 x = self.word2vec.get_sentence_embedding(post['source']['content']).view(1, -1)
             elif self.word_embedding == 'tfidf':
                 tfidf = post['source']['content']
@@ -56,6 +61,9 @@ class TreeDataset(InMemoryDataset):
             if 'label' in post['source'].keys():
                 y.append(post['source']['label'])
             for i, comment in enumerate(post['comment']):
+                
+                
+
                 if self.word_embedding == 'word2vec':
                     x = torch.cat(
                         [x, self.word2vec.get_sentence_embedding(comment['content']).view(1, -1)], 0)
@@ -76,7 +84,7 @@ class TreeDataset(InMemoryDataset):
                 centrality = torch.tensor(post['centrality']['Eigenvector'], dtype=torch.float32)
             elif self.centrality_metric == "Betweenness":
                 centrality = torch.tensor(post['centrality']['Betweenness'], dtype=torch.float32)
-            edge_index = [row, col]
+            edge_index = [row, col] # 边索引，包含所有边的连接关系
             no_root_edge_index = [no_root_row, no_root_col]
             y = torch.LongTensor(y)
             edge_index = to_undirected(torch.LongTensor(edge_index)) if self.undirected else torch.LongTensor(edge_index)
@@ -84,6 +92,7 @@ class TreeDataset(InMemoryDataset):
             if self.word_embedding == 'tfidf':
                 x = torch.sparse_coo_tensor(torch.tensor(indices).t(), values, (len(post['comment']) + 1, 5000),
                                             dtype=torch.float32).to_dense()
+            # 生成图数据对象：节点特征、边索引、无根边索引、中心性指标、label    
             one_data = Data(x=x, y=y, edge_index=edge_index, no_root_edge_index=no_root_edge_index,
                             centrality=centrality) if 'label' in post['source'].keys() else \
                 Data(x=x, edge_index=edge_index, no_root_edge_index=no_root_edge_index, centrality=centrality)

@@ -12,7 +12,7 @@ from torch_geometric.utils import degree, to_undirected, to_networkx
 import torch_geometric.utils as tg_utils
 from torch_geometric.data.batch import Batch
 
-
+# 计算每条边的权重，用于边删除操作
 def dege_drop_weights(data, aggr='mean', norm=True):
     centrality = data.centrality
     w_row = centrality[data.edge_index[0]].to(torch.float32)
@@ -28,27 +28,27 @@ def dege_drop_weights(data, aggr='mean', norm=True):
     weights = (s.max() - s) / (s.max() - s.mean())
     return weights
 
-
+# 根据权重删除边
 def drop_edge_weighted(data, edge_weights, p, threshold):
     edge_weights = edge_weights / edge_weights.mean() * p
     edge_weights = edge_weights.where(edge_weights < threshold, torch.ones_like(edge_weights) * threshold)
     sel_mask = torch.bernoulli(1. - edge_weights).to(torch.bool)
     return data.edge_index[:, sel_mask]
 
-
+# 计算节点权重
 def node_aug_weights(centrality, norm=True):
     s = torch.log(centrality) if norm else centrality
     weights = (s.max() - s) / (s.max() - s.mean())
     return weights
 
-
+# 根据权重删除节点
 def aug_node_weighted(node_weights, p, threshold):
     node_weights = node_weights / node_weights.mean() * p
     node_weights = node_weights.where(node_weights < threshold, torch.ones_like(node_weights) * threshold)
     sel_mask = torch.bernoulli(1. - node_weights).to(torch.bool)
     return sel_mask
 
-
+# 边删除过程
 def drop_edge(batch_data, aggr, p, threshold):
     aug_data = batch_data.clone()
     aug_data_list = aug_data.to_data_list()
@@ -59,7 +59,7 @@ def drop_edge(batch_data, aggr, p, threshold):
             aug_data_list[i].edge_index = aug_edge_index
     return Batch.from_data_list(aug_data_list).to(aug_data.x.device)
 
-
+# 节点删除过程
 def drop_node(batch_data, p, threshold):
     aug_data = batch_data.clone()
     aug_data_list = aug_data.to_data_list()
@@ -74,7 +74,7 @@ def drop_node(batch_data, p, threshold):
         aug_data_list[i].__num_nodes__ = aug_data_list[i].x.shape[0]
     return Batch.from_data_list(aug_data_list).to(aug_data.x.device)
 
-
+# 掩码图中的节点属性
 def mask_attr(batch_data, p, threshold):
     aug_data = batch_data.clone()
     aug_data_list = aug_data.to_data_list()
@@ -87,7 +87,7 @@ def mask_attr(batch_data, p, threshold):
         aug_data_list[i].x[sel_mask] = mask_token
     return Batch.from_data_list(aug_data_list).to(aug_data.x.device)
 
-
+# 图数据增强
 def augment(batch_data, augs):
     first_aug = augs[0]
     first_argu = first_aug.split(',')

@@ -10,7 +10,7 @@ import json
 import random
 from Main.utils import write_post, dataset_makedirs
 
-
+# 数据集划分
 def sort_dataset(label_source_path, label_dataset_path, k_shot=10000, split='622'):
     if split == '622':
         train_split = 0.6

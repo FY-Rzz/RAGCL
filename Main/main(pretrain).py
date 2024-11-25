@@ -4,7 +4,7 @@
 # @Email   :
 # @File    : main(pretrain).py
 # @Software: PyCharm
-# @Note    :
+# @Note    : 自监督预训练，通过自监督学习任务在无标签数据上进行预训练，提高模型的泛化能力。
 import sys
 import os
 import os.path as osp
@@ -55,7 +55,7 @@ def pre_train(dataloader, aug1, aug2, model, optimizer, device):
 
     return total_loss / len(dataloader.dataset)
 
-
+# 模型微调
 def fine_tuning(model, aug1, aug2, lamda, optimizer, dataloader, device):
     model.train()
 

@@ -19,7 +19,7 @@ import numpy as np
 import random
 import copy
 
-
+# GCN层的实现
 class GCNConv(MessagePassing):
     r"""The graph convolutional operator from the `"Semi-supervised
     Classfication with Graph Convolutional Networks"
@@ -141,7 +141,7 @@ class GCNConv(MessagePassing):
         return '{}({}, {})'.format(self.__class__.__name__, self.in_channels,
                                    self.out_channels)
 
-
+# 带批归一化（BN）和残差连接的GCN
 class ResGCN(torch.nn.Module):
     """GCN with BN and residual connection."""
 
@@ -549,6 +549,7 @@ class TDrumorGCN(torch.nn.Module):
         x1 = copy.copy(x.float())
         x = self.conv1(x, edge_index)
         x2 = copy.copy(x)
+        # 根特征增强
         root_extend = torch.zeros(len(data.batch), x1.size(1)).to(device)
         batch_size = max(data.batch) + 1
         for num_batch in range(batch_size):

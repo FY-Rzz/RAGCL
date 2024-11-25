@@ -1,0 +1,11 @@
+/.vscode/
+
+/Data/
+
+/Log/
+
+/Model/
+
+__pycache__/
+
+*.pyc

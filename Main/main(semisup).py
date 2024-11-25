@@ -4,7 +4,7 @@
 # @Email   :
 # @File    : main(semisup).py
 # @Software: PyCharm
-# @Note    :
+# @Note    : 半监督学习，结合有标签数据和无标签数据进行训练，提高模型在有标签数据上的性能。
 import sys
 import os
 import os.path as osp

@@ -4,7 +4,7 @@
 # @Email   :
 # @File    : centrality.py
 # @Software: PyCharm
-# @Note    :
+# @Note    :计算节点中心性并生成数据
 from torch_scatter import scatter
 import networkx as nx
 from torch_geometric.utils import degree, to_undirected, to_networkx
@@ -20,7 +20,7 @@ def write_json(dict, path):
 
 
 def get_root_index(data):
-    root_index = scatter(torch.ones((data.num_nodes,)).to(data.x.device).to(torch.long), data.batch, reduce='sum')
+    root_index = scatter(torch.ones((data.num_nodes,)).to(data.x.device).to(torch.long), data.batch, reduce='sum') # 用于在指定维度上对输入张量进行聚合
     for i in range(root_index.shape[0] - 1, -1, -1):
         root_index[i] = 0
         for j in range(i):
@@ -30,7 +30,7 @@ def get_root_index(data):
 
 # need normalization
 # root centrality == no children 1 level reply centrality
-def degree_centrality(data):
+def degree_centrality(data): # 度中心性计算
     ud_edge_index = to_undirected(data.edge_index)
     # out degree
     centrality = degree(ud_edge_index[1])
@@ -41,7 +41,7 @@ def degree_centrality(data):
 
 # need normalization
 # root centrality = no children 1 level reply centrality
-def pagerank_centrality(data, damp=0.85, k=10):
+def pagerank_centrality(data, damp=0.85, k=10): # PageRank中心性计算
     device = data.x.device
     bu_edge_index = data.edge_index.clone()
     bu_edge_index[0], bu_edge_index[1] = data.edge_index[1], data.edge_index[0]
@@ -64,7 +64,7 @@ def pagerank_centrality(data, damp=0.85, k=10):
 
 # need normalization
 # root centrality == no children 1 level reply centrality
-def eigenvector_centrality(data):
+def eigenvector_centrality(data): # 特征向量中心性计算
     bu_data = data.clone()
     bu_data.edge_index = bu_data.no_root_edge_index
     # bu_data.edge_index[0], bu_data.edge_index[1] = data.no_root_edge_index[1], data.no_root_edge_index[0]
@@ -80,7 +80,7 @@ def eigenvector_centrality(data):
 
 # need normalization
 # root centrality == no children 1 level reply centrality
-def betweenness_centrality(data):
+def betweenness_centrality(data): # 介数中心性计算
     bu_data = data.clone()
     # bu_data.edge_index[0], bu_data.edge_index[1] = data.edge_index[1], data.edge_index[0]
 
@@ -91,7 +91,7 @@ def betweenness_centrality(data):
     return centrality
 
 
-def calculate_centrality(source_path):
+def calculate_centrality(source_path): # 计算中心性
     raw_file_names = os.listdir(source_path)
     for filename in raw_file_names:
         filepath = os.path.join(source_path, filename)

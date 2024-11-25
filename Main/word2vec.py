@@ -23,6 +23,7 @@ class Embedding():
         self.word2idx = {}
         self.embedding_matrix = self.make_embedding()
 
+    # 用于向现有的词嵌入矩阵中添加新的词汇及其对应的嵌入向量
     def add_embedding(self, word):
         vector = torch.empty(1, self.embedding_dim)
         torch.nn.init.uniform_(vector)
@@ -30,6 +31,7 @@ class Embedding():
         self.idx2word.append(word)
         self.embedding_matrix = torch.cat([self.embedding_matrix, vector], 0)
 
+    # 生成词嵌入矩阵
     def make_embedding(self):
         self.embedding_matrix = []
         self.embedding = Word2Vec.load(self.w2v_path)

@@ -4,7 +4,7 @@
 # @Email   :
 # @File    : main(sup).py.py
 # @Software: PyCharm
-# @Note    :
+# @Note    : 有监督学习，通过有标签数据进行训练，提高模型在有标签数据上的性能
 import sys
 import os
 import os.path as osp
@@ -18,6 +18,7 @@ sys.path.append(osp.join(dirname, '..'))
 import numpy as np
 import time
 import torch.nn.functional as F
+import torch
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch_geometric.loader import DataLoader
@@ -32,17 +33,17 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 
 def sup_train(train_loader, aug1, aug2, model, optimizer, device, lamda, use_unsup_loss):
-    model.train()
+    model.train() # 设置模型为训练模式
     total_loss = 0
 
     augs1 = aug1.split('||')
     augs2 = aug2.split('||')
 
     for data in train_loader:
-        optimizer.zero_grad()
+        optimizer.zero_grad() # 梯度清零
         data = data.to(device)
 
-        out = model(data)
+        out = model(data) # 前向传播
         sup_loss = F.nll_loss(out, data.y.long().view(-1))
 
         if use_unsup_loss:
@@ -53,15 +54,15 @@ def sup_train(train_loader, aug1, aug2, model, optimizer, device, lamda, use_uns
             out2 = model.forward_graphcl(aug_data2)
             unsup_loss = model.loss_graphcl(out1, out2)
 
-            loss = sup_loss + lamda * unsup_loss
+            loss = sup_loss + lamda * unsup_loss  # 总损失 = 有监督损失 + λ * 无监督损失
         else:
-            loss = sup_loss
+            loss = sup_loss  #不使用无监督损失
 
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item() * data.num_graphs
+        loss.backward()  # 反向传播
+        optimizer.step()  # 更新参数
+        total_loss += loss.item() * data.num_graphs  # 计算总损失
 
-    return total_loss / len(train_loader.dataset)
+    return total_loss / len(train_loader.dataset)  # 返回平均损失
 
 
 def test(model, dataloader, num_classes, device):
@@ -85,10 +86,18 @@ def test(model, dataloader, num_classes, device):
     precs = []
     recs = []
     f1s = []
+
+    # for label in range(num_classes):
+    #     precs.append(round(precision_score(y_true == label, y_pred == label, labels=True), 4))
+    #     recs.append(round(recall_score(y_true == label, y_pred == label, labels=True), 4))
+    #     f1s.append(round(f1_score(y_true == label, y_pred == label, labels=True), 4))
+
     for label in range(num_classes):
-        precs.append(round(precision_score(y_true == label, y_pred == label, labels=True), 4))
-        recs.append(round(recall_score(y_true == label, y_pred == label, labels=True), 4))
-        f1s.append(round(f1_score(y_true == label, y_pred == label, labels=True), 4))
+        precs.append(round(precision_score(y_true == label, y_pred == label), 4))
+        recs.append(round(recall_score(y_true == label, y_pred == label), 4))
+        f1s.append(round(f1_score(y_true == label, y_pred == label), 4))
+
+        
     micro_p = round(precision_score(y_true, y_pred, labels=range(num_classes), average='micro'), 4)
     micro_r = round(recall_score(y_true, y_pred, labels=range(num_classes), average='micro'), 4)
     micro_f1 = round(f1_score(y_true, y_pred, labels=range(num_classes), average='micro'), 4)
@@ -121,8 +130,9 @@ def test_and_log(model, val_loader, test_loader, num_classes, device, epoch, lr,
 
 
 if __name__ == '__main__':
-    args = pargs()
+    args = pargs() 
 
+    # 读取命令行参数
     unsup_train_size = args.unsup_train_size
     dataset = args.dataset
     unsup_dataset = args.unsup_dataset
@@ -131,6 +141,7 @@ if __name__ == '__main__':
     runs = args.runs
     k = args.k
 
+    # 设置词嵌入方法和语言
     word_embedding = 'tfidf' if 'tfidf' in dataset else 'word2vec'
     lang = 'ch' if 'Weibo' in dataset else 'en'
     tokenize_mode = args.tokenize_mode
@@ -145,6 +156,7 @@ if __name__ == '__main__':
     epochs = args.epochs
     use_unsup_loss = args.use_unsup_loss
 
+    # 设置路径参数
     label_source_path = osp.join(dirname, '..', 'Data', dataset, 'source')
     label_dataset_path = osp.join(dirname, '..', 'Data', dataset, 'dataset')
     train_path = osp.join(label_dataset_path, 'train')
@@ -158,23 +170,28 @@ if __name__ == '__main__':
     log_path = osp.join(dirname, '..', 'Log', f'{log_name}.log')
     log_json_path = osp.join(dirname, '..', 'Log', f'{log_name}.json')
 
+    # 创建日志文件
     log = open(log_path, 'w')
     log_dict = create_log_dict_sup(args)
 
+    # 训练并保存模型w2v 
     if not osp.exists(model_path) and word_embedding == 'word2vec':
         sentences = collect_sentences(label_source_path, unlabel_dataset_path, unsup_train_size, lang, tokenize_mode)
         w2v_model = train_word2vec(sentences, vector_size)
         w2v_model.save(model_path)
 
     for run in range(runs):
+        # 日志记录
         write_log(log, f'run:{run}')
         log_record = {'run': run, 'val accs': [], 'test accs': [], 'test precs': [], 'test recs': [], 'test f1s': [],
                       'test micro metric': [], 'test macro metric': []}
-
+        # 加载w2v模型
         word2vec = Embedding(model_path, lang, tokenize_mode) if word_embedding == 'word2vec' else None
 
+        # 数据集划分
         sort_dataset(label_source_path, label_dataset_path, k_shot=k, split=split)
-
+        
+        # 数据加载器
         train_dataset = TreeDataset(train_path, word_embedding, word2vec, centrality, undirected)
         val_dataset = TreeDataset(val_path, word_embedding, word2vec, centrality, undirected)
         test_dataset = TreeDataset(test_path, word_embedding, word2vec, centrality, undirected)
@@ -200,6 +217,7 @@ if __name__ == '__main__':
                                                        device, 0, args.lr, 0, 0, log_record)
         write_log(log, log_info)
 
+        # 训练循环
         for epoch in range(1, epochs + 1):
             lr = scheduler.optimizer.param_groups[0]['lr']
             _ = sup_train(train_loader, args.aug1, args.aug2, model, optimizer, device, lamda, use_unsup_loss)
@@ -211,6 +229,10 @@ if __name__ == '__main__':
 
             if split == '622':
                 scheduler.step(val_error)
+        
+        # (ADD) 保存模型状态字典
+        model_state_dict_path = osp.join(dirname, '..', 'Model', f'{log_name}_run_{run}_model_state_dict.pth')
+        torch.save(model.state_dict(), model_state_dict_path)
 
         log_record['mean acc'] = round(np.mean(log_record['test accs'][-10:]), 3)
         write_log(log, '')
