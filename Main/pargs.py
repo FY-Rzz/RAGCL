@@ -24,7 +24,7 @@ def pargs():
     parser.add_argument('--undirected', type=str2bool, default=True)
 
     # ResGCN or BiGCN
-    parser.add_argument('--model', type=str, default='ResGCN') # BiGCN , ResGCN
+    parser.add_argument('--model', type=str, default='BiGCN') # BiGCN , ResGCN
     parser.add_argument('--n_layers_feat', type=int, default=1)
     parser.add_argument('--n_layers_conv', type=int, default=3)
     parser.add_argument('--n_layers_fc', type=int, default=2)

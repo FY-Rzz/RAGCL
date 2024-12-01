@@ -51,7 +51,7 @@ class TreeDataset(InMemoryDataset):
             if self.word_embedding == 'word2vec':
 
                 # 输出文本内容
-                print('帖子内容:',post['source']['content'], '\n', '判断结果:','假' if post['source']['label'] == 1 else '真' ,'\n')
+                # print('帖子内容:',post['source']['content'], '\n', '判断结果:','假' if post['source']['label'] == 1 else '真' ,'\n')
 
                 x = self.word2vec.get_sentence_embedding(post['source']['content']).view(1, -1)
             elif self.word_embedding == 'tfidf':
