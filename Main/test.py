@@ -128,6 +128,7 @@ def test_method_2():
 
     # 使用加载的模型进行分类任务
     incorrect_samples = []
+    all_samples = []
 
     with torch.no_grad():
         y_true = []
@@ -138,15 +139,22 @@ def test_method_2():
             
             y_true += data.y.tolist()
             y_pred += pred.argmax(dim=1).tolist()
+            print("条目数：" + f"{data.num_graphs}" + "\n")
 
             # 记录预测错误的样本
             for i in range(data.num_graphs):
+                all_samples.append({
+                    #'input': data.x[i].cpu().numpy().tolist(),  
+                    'true_label': data.y[i].item(),
+                    'predicted_label': pred.argmax(dim=1)[i].item(),
+                    'raw_data' : data.raw[i] if hasattr(data, 'raw') else None
+                })
                 if pred.argmax(dim=1)[i].item() != data.y[i].item():
                     incorrect_samples.append({
                         #'input': data.x[i].cpu().numpy().tolist(),  # 假设输入特征为 data.x
                         'true_label': data.y[i].item(),
                         'predicted_label': pred.argmax(dim=1)[i].item(),
-                        'raw_data' : data.raw[i]
+                        'raw_data' : data.raw[i] if hasattr(data, 'raw') else None
                     })
 
         y_true = torch.tensor(y_true)
@@ -159,11 +167,17 @@ def test_method_2():
         # 输出预测错误的样本
         print("预测错误的样本:")
         for sample in incorrect_samples:
-            print(f"输入: , 真实标签: {sample['true_label']}, 预测标签: {sample['predicted_label']}, 原始数据: {sample['raw_data']}")
+            print(f"真实标签: {sample['true_label']}, 预测标签: {sample['predicted_label']}, 原始数据: {sample['raw_data']}" + "\n")
+        # all
+        # print("所有样本:")
+        # for sample in all_samples:
+        #     print(f"真实标签: {sample['true_label']}, 预测标签: {sample['predicted_label']}, 原始数据: {sample['raw_data']}" + "\n")
 
-        # 绘制混淆矩阵
-        classes = [str(i) for i in range(num_classes)]
-        plot_confusion_matrix(y_true, y_pred, classes)
+
+        # # 绘制混淆矩阵
+        # classes = [str(i) for i in range(num_classes)]
+        # plot_confusion_matrix(y_true, y_pred, classes)
+        # print("draw done")
 
     print("predict done")
 

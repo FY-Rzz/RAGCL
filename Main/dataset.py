@@ -50,7 +50,7 @@ class TreeDataset(InMemoryDataset):
             post = json.load(open(filepath, 'r', encoding='utf-8'))
 
             # raw_data
-            raw_data = post['source']['tweet id'] + ": " + post['source']['content'] + "\n"
+            raw_data = post['source']['tweet id'] + ": " + post['source']['content']
 
             if self.word_embedding == 'word2vec':
                 # 输出文本内容
