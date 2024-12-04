@@ -48,8 +48,11 @@ class TreeDataset(InMemoryDataset):
 
             filepath = os.path.join(self.raw_dir, filename)
             post = json.load(open(filepath, 'r', encoding='utf-8'))
-            if self.word_embedding == 'word2vec':
 
+            # raw_data
+            raw_data = post['source']['tweet id'] + ": " + post['source']['content'] + "\n"
+
+            if self.word_embedding == 'word2vec':
                 # 输出文本内容
                 # print('帖子内容:',post['source']['content'], '\n', '判断结果:','假' if post['source']['label'] == 1 else '真' ,'\n')
 
@@ -94,8 +97,8 @@ class TreeDataset(InMemoryDataset):
                                             dtype=torch.float32).to_dense()
             # 生成图数据对象：节点特征、边索引、无根边索引、中心性指标、label    
             one_data = Data(x=x, y=y, edge_index=edge_index, no_root_edge_index=no_root_edge_index,
-                            centrality=centrality) if 'label' in post['source'].keys() else \
-                Data(x=x, edge_index=edge_index, no_root_edge_index=no_root_edge_index, centrality=centrality)
+                            centrality=centrality, raw=raw_data) if 'label' in post['source'].keys() else \
+                Data(x=x, edge_index=edge_index, no_root_edge_index=no_root_edge_index, centrality=centrality, raw=raw_data)
             data_list.append(one_data)
 
         if self.pre_filter is not None:

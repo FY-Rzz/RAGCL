@@ -22,6 +22,19 @@ from Main.model import ResGCN_graphcl, BiGCN_graphcl
 from Main.word2vec import Embedding
 from Main.pargs import pargs
 
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def plot_confusion_matrix(y_true, y_pred, classes):
+    cm = confusion_matrix(y_true, y_pred)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.show()
+
 def test_method_1():
     print("测试方法1启动！-----------")
     # 设置路径和参数
@@ -132,7 +145,8 @@ def test_method_2():
                     incorrect_samples.append({
                         #'input': data.x[i].cpu().numpy().tolist(),  # 假设输入特征为 data.x
                         'true_label': data.y[i].item(),
-                        'predicted_label': pred.argmax(dim=1)[i].item()
+                        'predicted_label': pred.argmax(dim=1)[i].item(),
+                        'raw_data' : data.raw[i]
                     })
 
         y_true = torch.tensor(y_true)
@@ -145,10 +159,14 @@ def test_method_2():
         # 输出预测错误的样本
         print("预测错误的样本:")
         for sample in incorrect_samples:
-            print(f"输入: , 真实标签: {sample['true_label']}, 预测标签: {sample['predicted_label']}")
+            print(f"输入: , 真实标签: {sample['true_label']}, 预测标签: {sample['predicted_label']}, 原始数据: {sample['raw_data']}")
+
+        # 绘制混淆矩阵
+        classes = [str(i) for i in range(num_classes)]
+        plot_confusion_matrix(y_true, y_pred, classes)
 
     print("predict done")
 
 if __name__ == '__main__':
-    test_method_1()
+    #test_method_1()
     test_method_2()

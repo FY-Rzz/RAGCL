@@ -16,14 +16,3 @@ Source code for RAGCL in paper:
 
 **Propagation Tree is not Deep: Adaptive Graph Contrastive Learning Approach for Rumor Detection**
 
-## Run
-
-You need to compute node centrality with ```centrality.py``` to process your own data before running the code.
-
-The code can be run in the following ways:
-
-```shell script
-nohup python main\(sup\).py --gpu 0 &
-```
-
-Dataset is available at [https://pan.baidu.com/s/1Kl5IQjU3a_pdt90YmNNVsQ?pwd=qqul](https://pan.baidu.com/s/1Kl5IQjU3a_pdt90YmNNVsQ?pwd=qqul)
