@@ -5,7 +5,7 @@ def pargs():
     str2bool = lambda x: x.lower() == "true"
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--dataset', type=str, default='Weibo')
+    parser.add_argument('--dataset', type=str, default='DRWeiboV3')
     parser.add_argument('--unsup_dataset', type=str, default='UWeiboV1')
     parser.add_argument('--tokenize_mode', type=str, default='naive')
 
@@ -24,7 +24,7 @@ def pargs():
     parser.add_argument('--undirected', type=str2bool, default=True)
 
     # ResGCN or BiGCN
-    parser.add_argument('--model', type=str, default='BiGCN') # BiGCN , ResGCN
+    parser.add_argument('--model', type=str, default='ResGCN') # BiGCN , ResGCN
     parser.add_argument('--n_layers_feat', type=int, default=1)
     parser.add_argument('--n_layers_conv', type=int, default=3)
     parser.add_argument('--n_layers_fc', type=int, default=2)

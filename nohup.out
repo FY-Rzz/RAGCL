@@ -1,0 +1,66 @@
+[nltk_data] Error loading punkt: <urlopen error [Errno 110] Connection
+[nltk_data]     timed out>
+[nltk_data] Downloading package punkt to /home/robot/nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+Processing...
+Done!
+total words: 7618
+total words: 7544
+total words: 7544
+[nltk_data] Downloading package punkt to /home/robot/nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+[nltk_data] Downloading package punkt to /home/robot/nltk_data...
+[nltk_data]   Package punkt is already up-to-date!
+Traceback (most recent call last):
+  File "Main/main(sup).py", line 179, in <module>
+    sentences = collect_sentences(label_source_path, unlabel_dataset_path, unsup_train_size, lang, tokenize_mode)
+  File "/home/robot/xzw/code/RAGCL/Main/../Main/word2vec.py", line 76, in collect_sentences
+    sentences = collect_label_sentences(label_source_path) + collect_unlabel_sentences(unlabel_path, unsup_train_size)
+  File "/home/robot/xzw/code/RAGCL/Main/../Main/word2vec.py", line 86, in collect_label_sentences
+    post = json.load(open(filepath, 'r', encoding='utf-8'))
+  File "/home/robot/anaconda3/envs/xzwRAGCL/lib/python3.8/json/__init__.py", line 293, in load
+    return loads(fp.read(),
+  File "/home/robot/anaconda3/envs/xzwRAGCL/lib/python3.8/json/__init__.py", line 357, in loads
+    return _default_decoder.decode(s)
+  File "/home/robot/anaconda3/envs/xzwRAGCL/lib/python3.8/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+  File "/home/robot/anaconda3/envs/xzwRAGCL/lib/python3.8/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+----
+def collect_unlabel_sentences(path, unsup_train_size):
+    sentences = []
+    filenames = os.listdir(path)
+    random.shuffle(filenames)
+    for i, filename in enumerate(filenames):
+        if i == unsup_train_size:
+            break
+        filepath = osp.join(path, filename)
+        try:
+            with open(filepath, 'r', encoding='utf-8') as file:
+                post = json.load(file)
+                sentences.append(post['source']['content'])
+                for comment in post['comment']:
+                    sentences.append(comment['content'])
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON in file {filepath}: {e}")
+        except Exception as e:
+            print(f"Error processing file {filepath}: {e}")
+    return sentences

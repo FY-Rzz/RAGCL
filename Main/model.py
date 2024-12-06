@@ -365,6 +365,10 @@ class ResGCN_graphcl(ResGCN):
         self.proj_head = nn.Sequential(nn.Linear(hidden, hidden), nn.ReLU(inplace=True), nn.Linear(hidden, hidden))
 
     def forward_graphcl(self, data):
+        r"""" 函数实现了一个图对比学习（GraphCL）模型的前向传播过程。
+        通过处理节点特征、全局特征、图卷积层、全局池化和全连接层，
+        该函数计算并返回图的表示。这个函数可以用于图表示学习任务，如节点分类、图分类等。
+        """
         x, edge_index, batch = data.x, data.edge_index, data.batch
         if self.use_xg:
             # xg is (batch_size x its feat dim)
@@ -395,6 +399,10 @@ class ResGCN_graphcl(ResGCN):
         return x
 
     def loss_graphcl(self, x1, x2, mean=True):
+        r"""x1：第一个视图的特征张量，形状为 (batch_size, feature_dim)。
+            x2：第二个视图的特征张量，形状为 (batch_size, feature_dim)。
+            mean：布尔值，指示是否对损失取平均值。默认为 True。
+        """
         T = 0.5
         batch_size, _ = x1.size()
 
